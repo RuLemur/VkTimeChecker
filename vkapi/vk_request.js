@@ -8,11 +8,11 @@ var args = {
         fields: 'online',
         user_ids: '210700286,69506234',
         v: '5.90',
-        access_token: fs.readFileSync("access_token.txt", "utf8")
+        access_token: fs.readFileSync("./vkapi/access_token.txt", "utf8")
     }
 }
 
-class Requster {
+class VK_Request {
 
     rqForUsersOnline(ids, callback) {
         args['parameters']['user_ids'] = ids;
@@ -35,6 +35,6 @@ class Requster {
         });
     }
 
-};
+}
 
-module.exports = Requster;
+module.exports = VK_Request;

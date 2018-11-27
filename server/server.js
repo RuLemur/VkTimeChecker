@@ -1,12 +1,14 @@
-const Requster = require('./requester.js');
-const DB = require('./database.js');
+const Requster = require('.vkapi/requester.js');
+const DB = require('.database/database.js');
+const Helper = require('./helpers/helper.js')
 var scheduler = require('node-schedule');
 
 let requester = new Requster();
 let db = new DB();
+let helper = new Helper();
 
 db.getUsers(function (all_users_json) {
-    start_scheduler(getIdsStringList(all_users_json));
+    start_scheduler(helper.getIdsStringList(all_users_json));
 });
 
 function start_scheduler(users) {
@@ -45,12 +47,4 @@ function refreshStatus(user) {
 //     db.addNewUser(users_info);
 // })
 
-
-function getIdsStringList(all_users) {
-    var user_list;
-    all_users.forEach(user => {
-        user_list += user['vk_id'] + ',';
-    });
-    return user_list;
-}
 

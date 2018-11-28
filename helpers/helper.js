@@ -1,7 +1,7 @@
 class Helper {
 
     getIdsStringList(all_users) {
-        var user_list;
+        let user_list;
         all_users.forEach(user => {
             user_list += user['vk_id'] + ',';
         });

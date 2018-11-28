@@ -33,12 +33,15 @@ class DB {
         });
     }
 
-    getUserInfo(vk_id, callback){
-        let sql = `select * from users where vk_id = ${vk_id}`;
-        con.query(sql, function (err, result) {
-            if (err) throw err;
-            callback(result)
+    getUserInfo(vk_id){
+        return new Promise( function (resolve) {
+            let sql = `select * from users where vk_id = ${vk_id}`;
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                resolve(result);
+            })
         })
+
     }
 
     getUsers(callback) {
@@ -79,18 +82,21 @@ class DB {
         });
     }
 
-    getUserOnlineByID(vk_id, callback, entry_time = null, exit_time = null) {
-        let sql = `select entry_time, exit_time from online_time where user_id = ${vk_id} and exit_time is not NULL`;
-        if (entry_time) {
-            sql += ` and entry_time >= ${entry_time}`
-        }
-        if (exit_time) {
-            sql += ` and exit_time <= ${exit_time}`
-        }
-        con.query(sql, function (err, result) {
-            if (err) throw err;
-            callback(result);
-        });
+    getUserOnlineByID(vk_id, entry_time = null, exit_time = null) {
+        return new Promise(function (resolve) {
+            let sql = `select entry_time, exit_time from online_time where user_id = ${vk_id} and exit_time is not NULL`;
+            if (entry_time) {
+                sql += ` and entry_time >= ${entry_time}`
+            }
+            if (exit_time) {
+                sql += ` and exit_time <= ${exit_time}`
+            }
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                resolve(result);
+            });
+        })
+
     }
 
 }

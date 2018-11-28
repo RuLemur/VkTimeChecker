@@ -8,14 +8,16 @@ let requester = new Request();
 let db = new DB();
 let helper = new Helper();
 
-// db.getUsers(function (all_users_json) {
-//     start_scheduler(helper.getIdsStringList(all_users_json));
-// });
-getUserData(321785162);
+db.getUsers(function (all_users_json) {
+    start_scheduler(helper.getIdsStringList(all_users_json));
+});
+
 function start_scheduler(users) {
     scheduler.scheduleJob('*/20 * * * * *', function () {
         requester.rqForUsersOnline(users, function (err, data) {
-            if (err) { throw err; }
+            if (err) {
+                throw err;
+            }
             data.forEach(user => {
                 refreshStatus(user);
                 // console.log(user);
@@ -43,26 +45,21 @@ function refreshStatus(user) {
     })
 }
 
-//todo: создать отдельный файл для этих функций?
-function getUserData(vk_id, callback) {
-    let users_data = {vk_data: []};
-    db.getUserInfo(vk_id, function (user_info) {
-        user_info.forEach(user => {
-            users_data['vk_data'].push(user)
-        });
-        users_data['vk_data'].forEach(user_data => {
-            db.getUserOnlineByID(user_data['vk_id'], function (data) {
-                // console.log(data)
-                user_data['online_data'] = data;
-            })
-        });
-        setTimeout(function () {
-            console.log(JSON.stringify(users_data))
-        }, 1000)
 
-    })
+// db.getUserInfo(vk_id, function (user_info) {
+//
+//     users_data['vk_data'].forEach(user_data => {
+//         db.getUserOnlineByID(user_data['vk_id'], function (data) {
+//             // console.log(data)
+//             user_data['online_data'] = data;
+//         })
+//     });
+//     // console.log(JSON.stringify(users_data))
+//     setTimeout(function () {
 
-}
+// }, 1000)
+
+// }
 
 // ids = '69506234,39528985,347745573,30785819';
 // requester.getFriendsIds(function (err, users_info) {

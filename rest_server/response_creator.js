@@ -1,5 +1,7 @@
+const VK_Request = require('../vkapi/vk_request');
 const DB = require("../database/database.js");
-var db = new DB();
+let db = new DB();
+let requester = new VK_Request();
 
 module.exports = {
     getUserOnlineData: function (vk_id, callback) {
@@ -14,6 +16,30 @@ module.exports = {
             }).then((users_data) => {
                 callback(users_data);
             })
+        })
+
+    },
+    getUserData: function (vk_id, callback) {
+        let users_data = {};
+        //todo: проверка на пустоту и валидные значения
+        Promise.all(vk_id.split(',').map(function (id) {
+            return db.getUserInfo(id);
+
+        }))
+            .then(vk_id => {
+                users_data['vk_data'] = vk_id;
+                callback(users_data);
+            })
+    },
+
+    addUsersById: function (vk_ids, callback) {
+        requester.rqForUsersOnline(vk_ids, function (err, users_info) {
+            db.addNewUser(users_info).then(() => {
+                    callback();
+                },
+                () => {
+                    callback();
+                });
         })
     }
 }

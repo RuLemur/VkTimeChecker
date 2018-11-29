@@ -8,7 +8,7 @@ let requester = new Request();
 let db = new DB();
 let helper = new Helper();
 
-db.getUsers(function (all_users_json) {
+db.getUsersIds(function (all_users_json) {
     start_scheduler(helper.getIdsStringList(all_users_json));
 });
 
@@ -20,7 +20,6 @@ function start_scheduler(users) {
             }
             data.forEach(user => {
                 refreshStatus(user);
-                // console.log(user);
             });
 
         })
@@ -38,8 +37,13 @@ function refreshStatus(user) {
             }
         } else {
             if (user['online']) {
-                db.addNewSession(user['id']);
-                console.log(user['first_name'] + ' ' + user['last_name'] + ' user go online');
+                db.addNewSession(user['id'], user['online_mobile']);
+                let out_str = user['first_name'] + ' ' + user['last_name'] + ' user go online';
+                if (user['online_mobile'])
+                {
+                    out_str += ' with mobile'
+                }
+                console.log(out_str);
             }
         }
     })

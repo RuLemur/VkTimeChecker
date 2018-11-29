@@ -22,20 +22,22 @@ class DB {
     }
 
     addNewUser(users_info) {
-        users_info.forEach(user_info => {
-            let sql = `insert into users (vk_id, first_name, last_name) 
+        return new Promise(function (resolve, reject) {
+            users_info.forEach(user_info => {
+                let sql = `insert into users (vk_id, first_name, last_name) 
                 values (${user_info['id']}, '${user_info['first_name']}', '${user_info['last_name']}');`
-            con.query(sql, function (err, result) {
-                if (!err.message.includes('ER_DUP_ENTRY')) {
-                    if (err) throw err;
-                }
+                con.query(sql, function (err, result) {
+                    if (err && !err.message.includes('ER_DUP_ENTRY')) {
+                        if (err) reject(err);
+                    } else resolve(result)
+                });
             });
-        });
+        })
     }
 
-    getUserInfo(vk_id){
-        return new Promise( function (resolve) {
-            let sql = `select * from users where vk_id = ${vk_id}`;
+    getUserInfo(vk_id) {
+        return new Promise(function (resolve) {
+            let sql = `select vk_id, first_name, last_name from users where vk_id = ${vk_id}`;
             con.query(sql, function (err, result) {
                 if (err) throw err;
                 resolve(result);
@@ -44,7 +46,7 @@ class DB {
 
     }
 
-    getUsers(callback) {
+    getUsersIds(callback) {
         let sql = `SELECT vk_id from users`;
         con.query(sql, function (err, result) {
             if (err) throw err;
@@ -53,10 +55,12 @@ class DB {
         });
     }
 
-    addNewSession(vk_id) {
+    addNewSession(vk_id, is_mobile) {
         let entry_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        let sql = `insert into online_time (user_id, entry_time, exit_time)
-                   values (${vk_id}, '${entry_time}', NULL);`;
+        if (!is_mobile)
+            is_mobile = 0;
+        let sql = `insert into online_time (user_id, entry_time, exit_time, is_mobile)
+                   values (${vk_id}, '${entry_time}', NULL, ${is_mobile});`;
         // console.log(sql);
         con.query(sql, function (err, result) {
             if (err) throw err;
@@ -84,7 +88,7 @@ class DB {
 
     getUserOnlineByID(vk_id, entry_time = null, exit_time = null) {
         return new Promise(function (resolve) {
-            let sql = `select entry_time, exit_time from online_time where user_id = ${vk_id} and exit_time is not NULL`;
+            let sql = `select entry_time, exit_time, is_mobile from online_time where user_id = ${vk_id} and exit_time is not NULL`;
             if (entry_time) {
                 sql += ` and entry_time >= ${entry_time}`
             }

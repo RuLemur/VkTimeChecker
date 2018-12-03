@@ -1,12 +1,11 @@
 const fs = require("fs");
+const helper = require("../helpers/helper");
 const Client = require('node-rest-client').Client;
 
 var vk_client = new Client();
 
-var args = {
+const args = {
     parameters: {
-        fields: 'online',
-        user_ids: '210700286,69506234',
         v: '5.90',
         access_token: fs.readFileSync("./vkapi/access_token.txt", "utf8")
     }
@@ -15,7 +14,9 @@ var args = {
 class VK_Request {
 
     rqForUsersOnline(ids, callback) {
-        args['parameters']['user_ids'] = ids;
+        let param = args;
+        param['parameters']['user_ids'] = ids;
+        param['parameters']['fields'] = "online";
         vk_client.get("https://api.vk.com/method/users.get", args, function (data, response) {
             if (data['error']) {
                 callback(new Error(data['error']['error_msg']), null)
@@ -23,6 +24,59 @@ class VK_Request {
 
             callback(null, data['response']);
         });
+    }
+
+    getGroupMembers(group_id, callback) {
+        this.rqForGroupMembers(group_id).then(data => {
+            if (data['response']['count'] <= 1000) {
+                callback(null, data['response']);
+            } else {
+                this.rqLargeGroupMembers(group_id, data).then(data => {
+                    callback(null, data['response']);
+                })
+            }
+        })
+    }
+
+    rqForGroupMembers(group_id, offset = 0) {
+        return new Promise((resolve, reject) => {
+            let param = args;
+            param['parameters']['group_id'] = group_id;
+            param['parameters']['fields'] = "first_name";
+            param['parameters']['offset'] = offset;
+            vk_client.get("https://api.vk.com/method/groups.getMembers", args, function (data, response) {
+                if (data['error']) {
+                    reject(new Error(data['error']['error_msg']), null)
+                }
+                resolve(data)
+            });
+        })
+    }
+
+    // rqLargeGroupMembers(group_id, ids_count) {
+    //     return new Promise((resolve, reject) => {
+    //         helper.generateLargeGetMembersArgs(group_id, ids_count, function (code) {
+    //             args['parameters']['code'] = code;
+    //             vk_client.get("https://api.vk.com/method/execute", args, function (data, response) {
+    //                 if (data['error']) {
+    //                     reject(new Error(data['error']['error_msg']), null)
+    //                 }
+    //                 resolve(data)
+    //             });
+    //         })
+    //     })
+    // }
+
+    rqLargeGroupMembers(group_id, data) {
+        return new Promise((resolve, reject) => {
+
+            for (let i = 1; i <= Math.floor(data['response']['count'] / 1000); i++) {
+                this.rqForGroupMembers(group_id, i * 1000).then(new_data => {
+                    data['response']['items'].concat(new_data['response']['items'])
+                })
+            }
+            resolve(data);
+        })
     }
 
     getFriendsIds(callback) {
@@ -34,6 +88,7 @@ class VK_Request {
             callback(null, data['response']['items']);
         });
     }
+
 
 }
 

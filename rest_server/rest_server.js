@@ -10,7 +10,7 @@ app.get('/getUsersOnline', function (req, res) {
 });
 
 app.get('/getUsersData', function (req, res) {
-    respCreator.getUserData(req.query["vk_id"], function (data) {
+    respCreator.getUserData(req.query["vk_ids"], function (data) {
         res.json(data);
     })
 });

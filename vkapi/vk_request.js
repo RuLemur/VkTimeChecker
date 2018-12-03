@@ -27,14 +27,19 @@ class VK_Request {
     }
 
     getGroupMembers(group_id, callback) {
-        this.rqForGroupMembers(group_id).then(data => {
-            if (data['response']['count'] <= 1000) {
-                callback(null, data['response']['items']);
-            } else {
-                this.rqLargeGroupMembers(group_id, data).then(data => {
-                    callback(null, data);
+        // let full_data = {"response": {"items": []}};
+        let proms = this.rqForGroupMembers(group_id, 0).then(first_data => {
+            let full_data = first_data;
+            for (let i = 1; i <= Math.floor(first_data['response']['count'] / 1000); i++) {
+                proms = proms.then(data => {
+                    full_data['response']['items'].concat(data['response']['items']);
+                    return this.rqForGroupMembers(group_id, i * 1000);
                 })
             }
+            // return proms.then(data => full_data['response']['items'].concat(data['response']['items']));
+            return full_data;
+        }).then(data => {
+            callback(data['response']['items'])
         })
     }
 
@@ -66,18 +71,6 @@ class VK_Request {
     //         })
     //     })
     // }
-
-    rqLargeGroupMembers(group_id, data) {
-        return new Promise((resolve, reject) => {
-            let offsets = Array.from(Array(Math.floor(data['response']['count'] / 1000)).keys());
-            Promise.all(offsets.map(offset => this.rqForGroupMembers(group_id, (offset + 1)*1000))).then(
-                new_data => {
-                    //TODO: добавить всё из new_data
-                    data = data['response']['items'].concat(new_data[0]['response']['items'])
-                }).then(() => resolve(data));
-        })
-
-    }
 
     getFriendsIds(callback) {
         vk_client.get("https://api.vk.com/method/friends.get", args, function (data, response) {

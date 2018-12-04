@@ -51,8 +51,8 @@ function refreshStatus(user) {
 
 
 // ids = '69506234,39528985,347745573,30785819';
-requester.getGroupMembers(82463658, function (users_info) {
-    db.addNewUser(users_info);
+requester.getGroupMembers(100614614,function (users_info) {
+    db.addNewUser(users_info)
 });
 
 

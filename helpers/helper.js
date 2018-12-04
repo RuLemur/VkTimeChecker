@@ -20,8 +20,3 @@ module.exports = {
     }
 
 }
-
-module.exports.generateLargeGetMembersArgs(1, 2000, function (data)
-{
-    console.log(data)
-})

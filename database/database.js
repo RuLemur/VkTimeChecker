@@ -23,15 +23,21 @@ class DB {
 
     addNewUser(users_info) {
         return new Promise(function (resolve, reject) {
-            users_info.forEach(user_info => {
-                let sql = `insert into users (vk_id, first_name, last_name) 
-                values (${user_info['id']}, '${user_info['first_name']}', '${user_info['last_name']}');`
-                con.query(sql, function (err, result) {
-                    if (err && !err.message.includes('ER_DUP_ENTRY')) {
-                        if (err) reject(err);
-                    } else resolve(result)
+            con.beginTransaction(function (err) {
+                if (err) console.log(err.message)
+                users_info.forEach(user_info => {
+                    let sql = `insert into users (vk_id, first_name, last_name) 
+                values (${user_info['id']}, "${user_info['first_name']}", "${user_info['last_name']}");`
+                    con.query(sql, function (err, result) {
+                        if (err && !err.message.includes('ER_DUP_ENTRY')) {
+                            if (err) {
+                                console.log(sql)
+                                reject(err);
+                            }
+                        } else resolve(result)
+                    });
                 });
-            });
+            })
         })
     }
 

@@ -1,7 +1,6 @@
 const fs = require("fs");
 const helper = require("../helpers/helper");
 const Client = require('node-rest-client').Client;
-
 var vk_client = new Client();
 
 const args = {
@@ -27,19 +26,13 @@ class VK_Request {
     }
 
     getGroupMembers(group_id, callback) {
-        // let full_data = {"response": {"items": []}};
-        let proms = this.rqForGroupMembers(group_id, 0).then(first_data => {
-            let full_data = first_data;
-            for (let i = 1; i <= Math.floor(first_data['response']['count'] / 1000); i++) {
-                proms = proms.then(data => {
-                    full_data['response']['items'].concat(data['response']['items']);
-                    return this.rqForGroupMembers(group_id, i * 1000);
-                })
+        this.rqForGroupMembers(group_id).then((data, err) => {
+            if (data['response']['count'] > 1000) {
+                callback(data['response']['items'])
+                this.rqLargeGroupMembers(group_id, data['response']['count'], callback);
+            } else {
+                callback(data['response']['items']);
             }
-            // return proms.then(data => full_data['response']['items'].concat(data['response']['items']));
-            return full_data;
-        }).then(data => {
-            callback(data['response']['items'])
         })
     }
 
@@ -58,19 +51,17 @@ class VK_Request {
         })
     }
 
-    // rqLargeGroupMembers(group_id, ids_count) {
-    //     return new Promise((resolve, reject) => {
-    //         helper.generateLargeGetMembersArgs(group_id, ids_count, function (code) {
-    //             args['parameters']['code'] = code;
-    //             vk_client.get("https://api.vk.com/method/execute", args, function (data, response) {
-    //                 if (data['error']) {
-    //                     reject(new Error(data['error']['error_msg']), null)
-    //                 }
-    //                 resolve(data)
-    //             });
-    //         })
-    //     })
-    // }
+    rqLargeGroupMembers(group_id, ids_count, callback) {
+        for (let i = 1; i <= Math.floor(ids_count / 1000); i++) {
+            this.rqForGroupMembers(group_id, i * 1000).then((data) => {
+                // full_data['response']['items'].concat(data['response']['items']);
+                // resolve()
+
+
+                callback(data['response']['items']);
+            })
+        }
+    }
 
     getFriendsIds(callback) {
         vk_client.get("https://api.vk.com/method/friends.get", args, function (data, response) {

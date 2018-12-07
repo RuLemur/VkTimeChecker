@@ -7,12 +7,12 @@ var scheduler = require('node-schedule');
 let requester = new Request();
 let db = new DB();
 
-// db.getUsersIds(function (all_users_json) {
-//     helper.getIdsStringList(all_users_json, function (users_list_string) {
-//         start_scheduler(users_list_string);
-//     })
-//
-// });
+db.getUsersIds(function (all_users_json) {
+    helper.getIdsStringList(all_users_json, function (users_list_string) {
+        start_scheduler(users_list_string);
+    })
+
+});
 
 function start_scheduler(users) {
     scheduler.scheduleJob('*/20 * * * * *', function () {
@@ -49,13 +49,3 @@ function refreshStatus(user) {
         }
     })
 }
-
-
-// ids = '69506234,39528985,347745573,30785819';
-requester.getGroupMembers(68471405, function (inter_data) {
-    db.addNewUser(inter_data);
-    // console.log("hi1");
-}).then((data) => {
-    db.addNewUser(data);
-})
-

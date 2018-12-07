@@ -110,13 +110,6 @@ class DB {
 
     }
 
-    getAccessToken(callback) {
-        let sql = `select Value from settings where Name = 'access_token'`;
-        con.query(sql, function (err, result) {
-            if (err) throw err;
-            callback(result);
-        });
-    }
 }
 
 module.exports = DB;

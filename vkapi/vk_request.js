@@ -38,12 +38,6 @@ class VK_Request {
                 items = items.concat(data['response']['items'])
                 if (i % 10 === 0) {
                     callback(items);
-                    // if (global.gc) {
-                    //     global.gc();
-                    // } else {
-                    //     console.log('Garbage collection unavailable.  Pass --expose-gc '
-                    //         + 'when launching node to enable forced garbage collection.');
-                    // }
                     console.log(process.memoryUsage());
                     console.log(`return intermediate data ${items.length} items`)
                     items = []

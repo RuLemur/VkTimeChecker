@@ -25,16 +25,35 @@ class VK_Request {
         });
     }
 
-    getGroupMembers(group_id, callback) {
-        this.rqForGroupMembers(group_id).then((data, err) => {
-            if (data['response']['count'] > 1000) {
-                callback(data['response']['items'])
-                this.rqLargeGroupMembers(group_id, data['response']['count'], callback);
-            } else {
-                callback(data['response']['items']);
+    async getGroupMembers(group_id, callback) {
+        console.log("start read group members");
+        let first_data = await this.rqForGroupMembers(group_id);
+        if (first_data['response']['count'] <= 1000) {
+            console.log(`end read group members ${first_data['response']['count']} total`);
+            return first_data['response']['items'];
+        } else {
+            let items = first_data['response']['items'];
+            for (let i = 1; i <= Math.floor(first_data['response']['count'] / 1000); i++) {
+                let data = await this.rqForGroupMembers(group_id, i * 1000)
+                items = items.concat(data['response']['items'])
+                if (i % 10 === 0) {
+                    callback(items);
+                    // if (global.gc) {
+                    //     global.gc();
+                    // } else {
+                    //     console.log('Garbage collection unavailable.  Pass --expose-gc '
+                    //         + 'when launching node to enable forced garbage collection.');
+                    // }
+                    console.log(process.memoryUsage());
+                    console.log(`return intermediate data ${items.length} items`)
+                    items = []
+                }
             }
-        })
+            console.log(`end read group members ${items.length} total`);
+            return items;
+        }
     }
+
 
     rqForGroupMembers(group_id, offset = 0) {
         return new Promise((resolve, reject) => {
@@ -49,18 +68,6 @@ class VK_Request {
                 resolve(data)
             });
         })
-    }
-
-    rqLargeGroupMembers(group_id, ids_count, callback) {
-        for (let i = 1; i <= Math.floor(ids_count / 1000); i++) {
-            this.rqForGroupMembers(group_id, i * 1000).then((data) => {
-                // full_data['response']['items'].concat(data['response']['items']);
-                // resolve()
-
-
-                callback(data['response']['items']);
-            })
-        }
     }
 
     getFriendsIds(callback) {

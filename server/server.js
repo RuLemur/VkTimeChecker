@@ -1,6 +1,7 @@
 const Request = require('../vkapi/vk_request.js');
 
 const DB = require('../database/database');
+const helper = require('../helpers/helper.js')
 var scheduler = require('node-schedule');
 
 let requester = new Request();
@@ -51,8 +52,10 @@ function refreshStatus(user) {
 
 
 // ids = '69506234,39528985,347745573,30785819';
-requester.getGroupMembers(100614614,function (users_info) {
-    db.addNewUser(users_info)
-});
-
+requester.getGroupMembers(68471405, function (inter_data) {
+    db.addNewUser(inter_data);
+    // console.log("hi1");
+}).then((data) => {
+    db.addNewUser(data);
+})
 

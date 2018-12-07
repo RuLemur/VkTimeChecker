@@ -62,7 +62,7 @@ class DB {
     }
 
     addNewSession(vk_id, is_mobile) {
-        let entry_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        let entry_time = new Date().getTime();
         if (!is_mobile)
             is_mobile = 0;
         let sql = `insert into online_time (user_id, entry_time, exit_time, is_mobile)
@@ -83,7 +83,8 @@ class DB {
     }
 
     updateSession(id_session) {
-        let exit_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        let exit_time = new Date().getTime();
+        // let exit_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
         let sql = `update online_time set exit_time = '${exit_time}' where id=${id_session}`;
         // console.log(sql);
 
@@ -109,6 +110,13 @@ class DB {
 
     }
 
+    getAccessToken(callback) {
+        let sql = `select Value from settings where Name = 'access_token'`;
+        con.query(sql, function (err, result) {
+            if (err) throw err;
+            callback(result);
+        });
+    }
 }
 
 module.exports = DB;

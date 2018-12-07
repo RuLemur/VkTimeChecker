@@ -23,15 +23,21 @@ class DB {
 
     addNewUser(users_info) {
         return new Promise(function (resolve, reject) {
-            users_info.forEach(user_info => {
-                let sql = `insert into users (vk_id, first_name, last_name) 
-                values (${user_info['id']}, '${user_info['first_name']}', '${user_info['last_name']}');`
-                con.query(sql, function (err, result) {
-                    if (err && !err.message.includes('ER_DUP_ENTRY')) {
-                        if (err) reject(err);
-                    } else resolve(result)
+            con.beginTransaction(function (err) {
+                if (err) console.log(err.message)
+                users_info.forEach(user_info => {
+                    let sql = `insert into users (vk_id, first_name, last_name) 
+                values (${user_info['id']}, "${user_info['first_name']}", "${user_info['last_name']}");`
+                    con.query(sql, function (err, result) {
+                        if (err && !err.message.includes('ER_DUP_ENTRY')) {
+                            if (err) {
+                                console.log(sql)
+                                reject(err);
+                            }
+                        } else resolve(result)
+                    });
                 });
-            });
+            })
         })
     }
 
@@ -56,7 +62,7 @@ class DB {
     }
 
     addNewSession(vk_id, is_mobile) {
-        let entry_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        let entry_time = new Date().getTime();
         if (!is_mobile)
             is_mobile = 0;
         let sql = `insert into online_time (user_id, entry_time, exit_time, is_mobile)
@@ -77,7 +83,8 @@ class DB {
     }
 
     updateSession(id_session) {
-        let exit_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        let exit_time = new Date().getTime();
+        // let exit_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
         let sql = `update online_time set exit_time = '${exit_time}' where id=${id_session}`;
         // console.log(sql);
 

@@ -1,12 +1,11 @@
-class Helper {
+module.exports = {
 
-    getIdsStringList(all_users) {
-        let user_list;
+    getIdsStringList: function (all_users, callback) {
+        let user_list = '';
         all_users.forEach(user => {
             user_list += user['vk_id'] + ',';
         });
-        return user_list;
+        callback(user_list);
     }
-}
 
-module.exports = Helper;
+}

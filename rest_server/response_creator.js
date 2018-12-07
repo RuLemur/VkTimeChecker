@@ -1,4 +1,4 @@
-const VK_Request = require('../vkapi/vk_request');
+const VK_Request = require('../vk_api/vk_request');
 const DB = require("../database/database.js");
 let db = new DB();
 let requester = new VK_Request();

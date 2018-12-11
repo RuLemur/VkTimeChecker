@@ -1,4 +1,4 @@
-const Request = require('../vkapi/vk_request.js');
+const Request = require('../vk_api/vk_request.js');
 
 const DB = require('../database/database');
 const helper = require('../helpers/helper.js')

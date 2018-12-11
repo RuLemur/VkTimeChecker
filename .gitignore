@@ -63,3 +63,4 @@ typings/
 .next
 
 .idea
+/vkapi/access_token.txt

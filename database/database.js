@@ -17,28 +17,29 @@ class DB {
         });
         con.query("USE mydb;", function (err, result) {
             if (err) throw err;
-            // console.log("Result: " + result);
         });
     }
 
     addNewUser(users_info) {
-        return new Promise(function (resolve, reject) {
-            con.beginTransaction(function (err) {
-                if (err) console.log(err.message)
-                users_info.forEach(user_info => {
-                    let sql = `insert into users (vk_id, first_name, last_name) 
+        // return new Promise(function (resolve, reject) {
+        con.beginTransaction(function (err) {
+            if (err) console.log(err.message)
+            users_info.forEach(user_info => {
+                let sql = `insert into users (vk_id, first_name, last_name) 
                 values (${user_info['id']}, "${user_info['first_name']}", "${user_info['last_name']}");`
-                    con.query(sql, function (err, result) {
-                        if (err && !err.message.includes('ER_DUP_ENTRY')) {
-                            if (err) {
-                                console.log(sql)
-                                reject(err);
-                            }
-                        } else resolve(result)
-                    });
+                con.query(sql, function (err, result) {
+                    if (err && !err.message.includes('ER_DUP_ENTRY')) {
+                        console.log(sql)
+                    }
                 });
+            });
+            con.commit(function (err) {
+                if (err) {
+                    console.log("commit err")
+                }
             })
         })
+        // })
     }
 
     getUserInfo(vk_id) {
@@ -67,10 +68,8 @@ class DB {
             is_mobile = 0;
         let sql = `insert into online_time (user_id, entry_time, exit_time, is_mobile)
                    values (${vk_id}, '${entry_time}', NULL, ${is_mobile});`;
-        // console.log(sql);
         con.query(sql, function (err, result) {
             if (err) throw err;
-            // console.log("Result: " + result);
         });
     }
 

@@ -8,20 +8,23 @@ const args = {
         v: '5.90',
         access_token: fs.readFileSync("./vk_api/access_token.txt", "utf8")
     }
-}
+};
 
 class VK_Request {
 
-    rqForUsersOnline(ids, callback) {
+    async rqForUsersOnline(ids, callback) {
+        console.log("start read online info");
         let param = args;
-        param['parameters']['user_ids'] = ids;
         param['parameters']['fields'] = "online";
-        vk_client.get("https://api.vk.com/method/users.get", args, function (data, response) {
-            if (data['error']) {
-                callback(new Error(data['error']['error_msg']), null)
-            }
+        ids.forEach(ids => {
+            param['parameters']['user_ids'] = ids;
+            vk_client.get("https://api.vk.com/method/users.get", args, async function (data, response) {
+                if (data['error']) {
+                    callback(new Error(data['error']['error_msg']), null)
+                }
 
-            callback(null, data['response']);
+                callback(null, data['response']);
+            });
         });
     }
 
@@ -34,12 +37,12 @@ class VK_Request {
         } else {
             let items = first_data['response']['items'];
             for (let i = 1; i <= Math.floor(first_data['response']['count'] / 1000); i++) {
-                let data = await this.rqForGroupMembers(group_id, i * 1000)
-                items = items.concat(data['response']['items'])
+                let data = await this.rqForGroupMembers(group_id, i * 1000);
+                items = items.concat(data['response']['items']);
                 if (i % 10 === 0) {
                     callback(items);
                     console.log(process.memoryUsage());
-                    console.log(`return intermediate data ${items.length} items`)
+                    console.log(`return intermediate data ${items.length} items`);
                     items = []
                 }
             }

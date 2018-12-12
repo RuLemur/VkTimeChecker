@@ -64,3 +64,5 @@ typings/
 
 .idea
 /vkapi/access_token.txt
+helpers/settings.js
+test.js
